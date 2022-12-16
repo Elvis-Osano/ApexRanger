@@ -1,4 +1,4 @@
-import { Auth } from "@/modules/auth";
+import Auth from "@/modules/auth";
 import { useAuth } from "@/modules/store/context";
 import axios from "axios";
 import Head from "next/head";
@@ -31,7 +31,7 @@ const Login = () => {
                     <h3 className="my-4 text-2xl font-semibold text-gray-900">
                         Account Login
                     </h3>
-                    <form className="flex flex-col space-y-5" onSubmit={(e: React.ChangeEvent<HTMLFormElement>) => new Auth().login(e, emailRef, passwordRef, router, dispatch)}>
+                    <form className="flex flex-col space-y-5" onSubmit={(e: React.ChangeEvent<HTMLFormElement>) => Auth.login(e, emailRef, passwordRef, router, dispatch)}>
                         <div className="flex flex-col space-y-1">
                             <label
                                 htmlFor="email"

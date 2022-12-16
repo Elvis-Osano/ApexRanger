@@ -29,7 +29,7 @@ export class CheckOut {
         toast.error(
           (err.message as string).includes("401")
             ? "Unauthorized,Please Login in"
-            : "null"
+            : "Server Error"
         );
         router.push("/login");
       });

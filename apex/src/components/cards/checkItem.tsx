@@ -1,9 +1,10 @@
 import { Button } from "@mui/material";
-import { Utility } from "@utility/index";
+
 import { GrFormAdd, GrFormSubtract } from "react-icons/gr";
 import { ImBin } from "react-icons/im";
 import { useCart } from "react-use-cart";
 import { motion, AnimatePresence } from "framer-motion"
+import Utility from "@utility/index";
 const CheckItem = ({ item }) => {
   const { updateItemQuantity, removeItem } = useCart();
 
@@ -62,7 +63,7 @@ const CheckItem = ({ item }) => {
         </div>
 
         <span className="grid place-items-center ml-2">
-          {new Utility().roundTo2Dp(item.itemTotal)}
+          {Utility.roundTo2Dp(item.itemTotal)}
         </span>
       </motion.li></AnimatePresence>
   );

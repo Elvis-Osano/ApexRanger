@@ -3,7 +3,8 @@ import CheckItem from "@components/cards/checkItem";
 
 import { Product } from "@interfaces/index";
 import { Button } from "@mui/material";
-import { Utility } from "@utility/index";
+import Utility from "@utility/index";
+
 import axios from "axios";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
@@ -11,7 +12,7 @@ import { useCart } from "react-use-cart";
 
 const Checkout = () => {
   const { items, emptyCart, cartTotal } = useCart();
-  let total = new Utility().roundTo2Dp(cartTotal);
+  let total = Utility.roundTo2Dp(cartTotal);
   const router = useRouter()
 
 

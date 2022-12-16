@@ -2,9 +2,9 @@ import axios from "axios";
 import { NextRouter } from "next/router";
 import { toast } from "react-toastify";
 
-export class Auth {
+const Auth = {
   //LogOut User
-  logout = (
+  logout: (
     dispatch: React.Dispatch<{
       type: string;
       payload?: any;
@@ -28,10 +28,9 @@ export class Auth {
         router.push("/login");
       })
       .catch((err) => {});
-  };
-
+  },
   //User Login
-  login = (
+  login: (
     e: React.ChangeEvent<HTMLFormElement>,
     emailRef: React.MutableRefObject<HTMLInputElement>,
     passwordRef: React.MutableRefObject<HTMLInputElement>,
@@ -63,5 +62,6 @@ export class Auth {
       .catch((err) => {
         toast.error("Invalid Email Or Password");
       });
-  };
-}
+  },
+};
+export default Auth;

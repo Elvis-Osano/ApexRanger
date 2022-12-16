@@ -13,9 +13,9 @@ const Sidebar = ({ children, index, setIndex }) => {
           <p>Apex</p>
         </div>
         {sidebarItems.map((item, i) => (
-          <ButtonBase className="text-red-500" onClick={() => setIndex(i)}>
+          <ButtonBase key={i} className="text-red-500" onClick={() => setIndex(i)}>
             <span
-              key={i}
+
               className={`${index === i ? "text-rose-500" : "text-gray-500 "} flex capitalize  cursor-pointer gap-2 flex-col py-5 items-center`}
 
             >
@@ -27,9 +27,9 @@ const Sidebar = ({ children, index, setIndex }) => {
       </div>
       <div className="bg-gradient-to-b from-rose-500 via-red-400 to-red-500 rounded-r-lg h-96 mt-5 w-20">
         {sidebarItemsRegular.map((item, i) => (
-          <ButtonBase className="block w-full">
+          <ButtonBase key={i} className="block w-full">
             <span
-              key={i}
+
               className="flex capitalize text-slate-100  cursor-pointer gap-2 flex-col py-5 items-center"
             >
               {item.name} {item.icon}

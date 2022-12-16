@@ -1,14 +1,15 @@
-import { Auth } from "@/modules/auth";
+import Auth from "@/modules/auth";
 import { useAuth } from "@/modules/store/context";
 import Menu from "@components/framework/menu";
 import Sidebar from "@components/layout/sidebar";
 import { Button } from "@mui/material";
+import Utility from "@utility/index";
 import axios from "axios";
 import { GetStaticProps } from "next";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AiOutlineDoubleRight } from "react-icons/ai";
 import { AiOutlinePoweroff } from "react-icons/ai"
 const Checkout = dynamic(() => import("../src/components/framework/checkout"), {
@@ -17,14 +18,19 @@ const Checkout = dynamic(() => import("../src/components/framework/checkout"), {
 });
 
 const IndexPage = ({ fish, burger, dessert, chinese }) => {
-
+  const searchRef = useRef(null) as React.MutableRefObject<HTMLInputElement>;
   const { state, dispatch } = useAuth()
   const router = useRouter()
   const [index, setIndex] = useState(0)
 
+  const [filter, setFilter] = useState<string>("")
+
+  const filterFoods = useMemo(() => {
+    return filter ? (fish as any[]).concat([...burger, ...chinese, ...dessert]).filter((item) => (item.title as string).toLowerCase().includes(filter.trim().toLowerCase())) : fish
+  }, [filter])
 
   return (
-    <main className="bg-slate-100 h-screen  " onContextMenu={(e) => e.preventDefault()}>
+    <main className="bg-slate-100 h-screen" onContextMenu={(e) => e.preventDefault()}>
       <Head>
         <title>Home</title>
       </Head>
@@ -38,11 +44,11 @@ const IndexPage = ({ fish, burger, dessert, chinese }) => {
               <small className="font-pacifico">Apex Ranger</small>
             </span>
             {/* search bar */}
-            <input type="text" className="border w-4/6 p-2 focus:border-blue-500 outline-none border-red-300 rounded-full" placeholder="Search Dish,Drink..." />
+            <input type="text" ref={searchRef} onChange={(e) => setFilter(e.target.value)} className="border w-4/6 p-2 focus:border-blue-500 outline-none border-red-300 rounded-full" placeholder="Search Dish,Drink..." />
             {/* logout */}
             <div className="h-14 flex items-center  w-1/6 p-4 gap-2 rounded">
               <span className="w-8 grid place-items-center h-8 bg-gradient-to-r  from-rose-500 via-red-400 to-red-500 border-2 border-gray-100 rounded-full text-white capitalize font-bold">{state.name.charAt(0)}</span>
-              <Button onClick={() => new Auth().logout(dispatch, router)} className="font-sans capitalize p-0 text-rose-400 border-red-500 px-2" variant="outlined" endIcon={<AiOutlinePoweroff />}>Logout</Button>
+              <Button onClick={() => Auth.logout(dispatch, router)} className="font-sans capitalize p-0 text-rose-400 border-red-500 px-2" variant="outlined" endIcon={<AiOutlinePoweroff />}>Logout</Button>
             </div>
           </div>
           {/* header  */}
@@ -68,7 +74,7 @@ const IndexPage = ({ fish, burger, dessert, chinese }) => {
                 </span>
               </div>
               {/* menu list  */}
-              {/* <Menu {...{ fish, burger, dessert, chinese }} index={index} /> */}
+              <Menu {...{ fish: filterFoods, burger, dessert, chinese }} index={index} />
             </div>
             {/* checkout  */}
             <Checkout />
@@ -105,10 +111,10 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
 
   return {
     props: {
-      // fish: data.menuItems,
-      // burger: burgerData.menuItems,
-      // dessert: dessertData.menuItems,
-      // chinese: chineseData.menuItems,
+      fish: data.menuItems,
+      burger: burgerData.menuItems,
+      dessert: dessertData.menuItems,
+      chinese: chineseData.menuItems,
     },
   };
 };

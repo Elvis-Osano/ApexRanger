@@ -1,5 +1,6 @@
 import { ButtonBase } from "@mui/material";
-import { Utility } from "@utility/index";
+import Utility from "@utility/index";
+
 import { motion } from "framer-motion";
 import Image from "next/image";
 import React from "react";
@@ -17,7 +18,7 @@ const MenuCard = ({ data }) => {
             addItem({
               id: data.id,
               name: data.title,
-              price: new Utility().roundTo2Dp(Math.random() * 100),
+              price: Utility.roundTo2Dp(Math.random() * 100),
             })
         }
 
