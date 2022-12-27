@@ -1,3 +1,4 @@
+import { menuItem } from "@interfaces/index";
 import { ButtonBase } from "@mui/material";
 import Utility from "@utility/index";
 
@@ -5,11 +6,11 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import React from "react";
 import { useCart } from "react-use-cart";
-const MenuCard = ({ data }) => {
+const MenuCard: React.FC<{ children?: React.ReactNode, data: menuItem }> = ({ data }) => {
   const { addItem, inCart, getItem, items, updateItemQuantity } = useCart();
 
   return (
-    <ButtonBase className="block bg-white text-white rounded-lg">
+    <ButtonBase className="block bg-white h-max text-white rounded-lg">
       <motion.div
         className={`
         h-36 bg-transparent relative rounded-lg cursor-pointer`}
@@ -18,7 +19,7 @@ const MenuCard = ({ data }) => {
             addItem({
               id: data.id,
               name: data.title,
-              price: Utility.roundTo2Dp(Math.random() * 100),
+              price: data.price,
             })
         }
 
@@ -40,7 +41,7 @@ const MenuCard = ({ data }) => {
           <Image src={data.image} className="absolute rounded-lg" fill alt="hello" />
         </div>
         <span className="absolute bg-gradient-to-r from-rose-500 via-red-400 to-red-500 top-3 w-4/6 px-2 py-1 rounded-full text-white left-2 right-4">
-          Ksh 750
+          Ksh {data.price}
         </span>
         <span
           style={style}

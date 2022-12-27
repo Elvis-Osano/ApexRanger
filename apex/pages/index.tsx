@@ -2,6 +2,7 @@ import Auth from "@/modules/auth";
 import { useAuth } from "@/modules/store/context";
 import Menu from "@components/framework/menu";
 import Sidebar from "@components/layout/sidebar";
+import { menuItem } from "@interfaces/index";
 import { Button } from "@mui/material";
 import Utility from "@utility/index";
 import axios from "axios";
@@ -23,6 +24,7 @@ const IndexPage = ({ fish, burger, dessert, chinese }) => {
   const router = useRouter()
   const [index, setIndex] = useState(0)
 
+
   const [filter, setFilter] = useState<string>("")
 
   const filterFoods = useMemo(() => {
@@ -42,6 +44,7 @@ const IndexPage = ({ fish, burger, dessert, chinese }) => {
             <span className="flex flex-col gap-2 capitalize w-1/6">
               <h1>{state.name}</h1>
               <small className="font-pacifico">Apex Ranger</small>
+
             </span>
             {/* search bar */}
             <input type="text" ref={searchRef} onChange={(e) => setFilter(e.target.value)} className="border w-4/6 p-2 focus:border-blue-500 outline-none border-red-300 rounded-full" placeholder="Search Dish,Drink..." />
@@ -111,10 +114,11 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
 
   return {
     props: {
-      fish: data.menuItems,
-      burger: burgerData.menuItems,
-      dessert: dessertData.menuItems,
-      chinese: chineseData.menuItems,
+      fish: await Utility.addPrice(data.menuItems),
+      burger: await Utility.addPrice(burgerData.menuItems),
+      dessert: await Utility.addPrice(dessertData.menuItems),
+      chinese: await Utility.addPrice(chineseData.menuItems),
     },
   };
 };
+

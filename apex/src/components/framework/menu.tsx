@@ -1,4 +1,5 @@
 import MenuCard from "@components/cards/menuCard";
+import { menuItem } from "@interfaces/index";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
@@ -14,8 +15,8 @@ const Menu = ({ fish, burger, dessert, chinese, index }) => {
 
     <section
 
-      className="grid grid-cols-3 gap-4 mt-2 pr-2 h-[510px] grid-flow-row-dense overflow-y-scroll overflow-x-hidden ">
-      {menus[index].map((food, i) => (
+      className="grid grid-cols-3 gap-4 mt-2 pr-2 h-[510px]  overflow-y-scroll overflow-x-hidden ">
+      {menus[index].map((food: menuItem) => (
         <MenuCard key={food.id} data={food} />
       ))}
     </section>

@@ -19,3 +19,20 @@ export interface valuType {
     payload?: any;
   }>;
 }
+export interface menuItem {
+  id: string;
+  title: string;
+  image: string;
+  imageType: string;
+  restaurantChain: string;
+  servingSize: string;
+  readableServingSize: string;
+  servings: Servings;
+  price: number;
+}
+
+interface Servings {
+  number: number;
+  size: number;
+  unit: string;
+}

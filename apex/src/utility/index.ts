@@ -1,3 +1,4 @@
+import { menuItem } from "@interfaces/index";
 import React from "react";
 
 const Utility = {
@@ -13,6 +14,15 @@ const Utility = {
    */
   roundTo2Dp: (num: number): number => {
     return Math.round((num + Number.EPSILON) * 100) / 100;
+  },
+
+  addPrice: async function (arr: menuItem[]): Promise<menuItem[]> {
+    return arr.map(
+      function (item: menuItem) {
+        item.price = this.roundTo2Dp(Math.random() * 1000);
+        return item;
+      }.bind(Utility)
+    );
   },
 };
 
