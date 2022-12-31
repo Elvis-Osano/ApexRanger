@@ -31,7 +31,7 @@ const auth_service_1 = __webpack_require__(/*! ./auth.service */ "./apps/auth/sr
 const current_user_decorator_1 = __webpack_require__(/*! ./current-user.decorator */ "./apps/auth/src/current-user.decorator.ts");
 const jwt_auth_guard_1 = __webpack_require__(/*! ./guards/jwt-auth.guard */ "./apps/auth/src/guards/jwt-auth.guard.ts");
 const local_auth_guard_1 = __webpack_require__(/*! ./guards/local-auth.guard */ "./apps/auth/src/guards/local-auth.guard.ts");
-const user_schema_1 = __webpack_require__(/*! ./users/schemas/user.schema */ "./apps/auth/src/users/schemas/user.schema.ts");
+const user_entity_1 = __webpack_require__(/*! ./users/entities/user.entity */ "./apps/auth/src/users/entities/user.entity.ts");
 let AuthController = class AuthController {
     constructor(authService) {
         this.authService = authService;
@@ -49,19 +49,19 @@ let AuthController = class AuthController {
 };
 __decorate([
     (0, common_1.UseGuards)(local_auth_guard_1.LocalAuthGuard),
-    (0, common_1.Post)('login'),
+    (0, common_1.Post)("login"),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Res)({ passthrough: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [typeof (_a = typeof user_schema_1.User !== "undefined" && user_schema_1.User) === "function" ? _a : Object, typeof (_b = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _b : Object]),
+    __metadata("design:paramtypes", [typeof (_a = typeof user_entity_1.default !== "undefined" && user_entity_1.default) === "function" ? _a : Object, typeof (_b = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _b : Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.default),
-    (0, microservices_1.MessagePattern)('validate_user'),
+    (0, microservices_1.MessagePattern)("validate_user"),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [typeof (_c = typeof user_schema_1.User !== "undefined" && user_schema_1.User) === "function" ? _c : Object]),
+    __metadata("design:paramtypes", [typeof (_c = typeof user_entity_1.default !== "undefined" && user_entity_1.default) === "function" ? _c : Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "validateUser", null);
 __decorate([
@@ -72,7 +72,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "logout", null);
 AuthController = __decorate([
-    (0, common_1.Controller)('auth'),
+    (0, common_1.Controller)("auth"),
     __metadata("design:paramtypes", [typeof (_e = typeof auth_service_1.AuthService !== "undefined" && auth_service_1.AuthService) === "function" ? _e : Object])
 ], AuthController);
 exports.AuthController = AuthController;
@@ -105,12 +105,13 @@ const auth_service_1 = __webpack_require__(/*! ./auth.service */ "./apps/auth/sr
 const jwt_strategy_1 = __webpack_require__(/*! ./strategies/jwt.strategy */ "./apps/auth/src/strategies/jwt.strategy.ts");
 const local_strategy_1 = __webpack_require__(/*! ./strategies/local.strategy */ "./apps/auth/src/strategies/local.strategy.ts");
 const users_module_1 = __webpack_require__(/*! ./users/users.module */ "./apps/auth/src/users/users.module.ts");
+const src_1 = __webpack_require__(/*! @app/common/database/src */ "./libs/common/src/database/src/index.ts");
 let AuthModule = class AuthModule {
 };
 AuthModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            common_2.DatabaseModule,
+            src_1.DatabaseModule,
             users_module_1.UsersModule,
             common_2.RmqModule,
             config_1.ConfigModule.forRoot({
@@ -118,15 +119,15 @@ AuthModule = __decorate([
                 validationSchema: Joi.object({
                     JWT_SECRET: Joi.string().required(),
                     JWT_EXPIRATION: Joi.string().required(),
-                    MONGODB_URI: Joi.string().required(),
+                    DB_URL: Joi.string().required(),
                 }),
-                envFilePath: './apps/auth/.env',
+                envFilePath: "./apps/auth/.env",
             }),
             jwt_1.JwtModule.registerAsync({
                 useFactory: (configService) => ({
-                    secret: configService.get('JWT_SECRET'),
+                    secret: configService.get("JWT_SECRET"),
                     signOptions: {
-                        expiresIn: `${configService.get('JWT_EXPIRATION')}s`,
+                        expiresIn: `${configService.get("JWT_EXPIRATION")}s`,
                     },
                 }),
                 inject: [config_1.ConfigService],
@@ -170,18 +171,18 @@ let AuthService = class AuthService {
     }
     async login(user, response) {
         const tokenPayload = {
-            userId: user._id.toHexString(),
+            userId: user.id,
         };
         const expires = new Date();
-        expires.setSeconds(expires.getSeconds() + this.configService.get('JWT_EXPIRATION'));
+        expires.setSeconds(expires.getSeconds() + this.configService.get("JWT_EXPIRATION"));
         const token = this.jwtService.sign(tokenPayload);
-        response.cookie('Authentication', token, {
+        response.cookie("Authentication", token, {
             httpOnly: true,
             expires,
         });
     }
     logout(response) {
-        response.cookie('Authentication', '', {
+        response.cookie("Authentication", "", {
             httpOnly: true,
             expires: new Date(),
         });
@@ -207,10 +208,10 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CurrentUser = exports.getCurrentUserByContext = void 0;
 const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 const getCurrentUserByContext = (context) => {
-    if (context.getType() === 'http') {
+    if (context.getType() === "http") {
         return context.switchToHttp().getRequest().user;
     }
-    if (context.getType() === 'rpc') {
+    if (context.getType() === "rpc") {
         return context.switchToRpc().getData().user;
     }
 };
@@ -276,7 +277,6 @@ const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
 const passport_1 = __webpack_require__(/*! @nestjs/passport */ "@nestjs/passport");
 const passport_jwt_1 = __webpack_require__(/*! passport-jwt */ "passport-jwt");
-const mongoose_1 = __webpack_require__(/*! mongoose */ "mongoose");
 const users_service_1 = __webpack_require__(/*! ../users/users.service */ "./apps/auth/src/users/users.service.ts");
 let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy) {
     constructor(configService, usersService) {
@@ -286,14 +286,14 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
                     return request === null || request === void 0 ? void 0 : request.Authentication;
                 },
             ]),
-            secretOrKey: configService.get('JWT_SECRET'),
+            secretOrKey: configService.get("JWT_SECRET"),
         });
         this.usersService = usersService;
     }
     async validate({ userId }) {
         try {
             return await this.usersService.getUser({
-                _id: new mongoose_1.Types.ObjectId(userId),
+                id: userId,
             });
         }
         catch (err) {
@@ -335,7 +335,7 @@ const passport_local_1 = __webpack_require__(/*! passport-local */ "passport-loc
 const users_service_1 = __webpack_require__(/*! ../users/users.service */ "./apps/auth/src/users/users.service.ts");
 let LocalStrategy = class LocalStrategy extends (0, passport_1.PassportStrategy)(passport_local_1.Strategy) {
     constructor(usersService) {
-        super({ usernameField: 'email' });
+        super({ usernameField: "email" });
         this.usersService = usersService;
     }
     async validate(email, password) {
@@ -386,10 +386,10 @@ exports.CreateUserRequest = CreateUserRequest;
 
 /***/ }),
 
-/***/ "./apps/auth/src/users/schemas/user.schema.ts":
-/*!****************************************************!*\
-  !*** ./apps/auth/src/users/schemas/user.schema.ts ***!
-  \****************************************************/
+/***/ "./apps/auth/src/users/entities/user.entity.ts":
+/*!*****************************************************!*\
+  !*** ./apps/auth/src/users/entities/user.entity.ts ***!
+  \*****************************************************/
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -403,28 +403,29 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.UserSchema = exports.User = void 0;
-const mongoose_1 = __webpack_require__(/*! @nestjs/mongoose */ "@nestjs/mongoose");
-const common_1 = __webpack_require__(/*! @app/common */ "./libs/common/src/index.ts");
-let User = class User extends common_1.AbstractDocument {
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+let User = class User {
 };
 __decorate([
-    (0, mongoose_1.Prop)(),
+    (0, typeorm_1.PrimaryGeneratedColumn)(),
+    __metadata("design:type", Number)
+], User.prototype, "id", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], User.prototype, "name", void 0);
 __decorate([
-    (0, mongoose_1.Prop)(),
+    (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], User.prototype, "email", void 0);
 __decorate([
-    (0, mongoose_1.Prop)(),
+    (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], User.prototype, "password", void 0);
 User = __decorate([
-    (0, mongoose_1.Schema)({ versionKey: false })
+    (0, typeorm_1.Entity)({ name: "Users" })
 ], User);
-exports.User = User;
-exports.UserSchema = mongoose_1.SchemaFactory.createForClass(User);
+exports["default"] = User;
 
 
 /***/ }),
@@ -461,6 +462,9 @@ let UsersController = class UsersController {
     async createUser(request) {
         return this.usersService.createUser(request);
     }
+    async getAllUsers() {
+        return this.usersService.findAll();
+    }
 };
 __decorate([
     (0, common_1.Post)(),
@@ -469,8 +473,14 @@ __decorate([
     __metadata("design:paramtypes", [typeof (_a = typeof create_user_request_1.CreateUserRequest !== "undefined" && create_user_request_1.CreateUserRequest) === "function" ? _a : Object]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "createUser", null);
+__decorate([
+    (0, common_1.Get)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "getAllUsers", null);
 UsersController = __decorate([
-    (0, common_1.Controller)('auth/users'),
+    (0, common_1.Controller)("auth/users"),
     __metadata("design:paramtypes", [typeof (_b = typeof users_service_1.UsersService !== "undefined" && users_service_1.UsersService) === "function" ? _b : Object])
 ], UsersController);
 exports.UsersController = UsersController;
@@ -494,68 +504,22 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.UsersModule = void 0;
 const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-const users_repository_1 = __webpack_require__(/*! ./users.repository */ "./apps/auth/src/users/users.repository.ts");
 const users_controller_1 = __webpack_require__(/*! ./users.controller */ "./apps/auth/src/users/users.controller.ts");
 const users_service_1 = __webpack_require__(/*! ./users.service */ "./apps/auth/src/users/users.service.ts");
-const mongoose_1 = __webpack_require__(/*! @nestjs/mongoose */ "@nestjs/mongoose");
-const user_schema_1 = __webpack_require__(/*! ./schemas/user.schema */ "./apps/auth/src/users/schemas/user.schema.ts");
+const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
+const user_entity_1 = __webpack_require__(/*! ./entities/user.entity */ "./apps/auth/src/users/entities/user.entity.ts");
+const src_1 = __webpack_require__(/*! @app/common/database/src */ "./libs/common/src/database/src/index.ts");
 let UsersModule = class UsersModule {
 };
 UsersModule = __decorate([
     (0, common_1.Module)({
-        imports: [
-            mongoose_1.MongooseModule.forFeature([{ name: user_schema_1.User.name, schema: user_schema_1.UserSchema }]),
-        ],
+        imports: [src_1.DatabaseModule, typeorm_1.TypeOrmModule.forFeature([user_entity_1.default])],
         controllers: [users_controller_1.UsersController],
-        providers: [users_service_1.UsersService, users_repository_1.UsersRepository],
+        providers: [users_service_1.UsersService],
         exports: [users_service_1.UsersService],
     })
 ], UsersModule);
 exports.UsersModule = UsersModule;
-
-
-/***/ }),
-
-/***/ "./apps/auth/src/users/users.repository.ts":
-/*!*************************************************!*\
-  !*** ./apps/auth/src/users/users.repository.ts ***!
-  \*************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
-var UsersRepository_1, _a, _b;
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.UsersRepository = void 0;
-const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-const mongoose_1 = __webpack_require__(/*! @nestjs/mongoose */ "@nestjs/mongoose");
-const mongoose_2 = __webpack_require__(/*! mongoose */ "mongoose");
-const common_2 = __webpack_require__(/*! @app/common */ "./libs/common/src/index.ts");
-const user_schema_1 = __webpack_require__(/*! ./schemas/user.schema */ "./apps/auth/src/users/schemas/user.schema.ts");
-let UsersRepository = UsersRepository_1 = class UsersRepository extends common_2.AbstractRepository {
-    constructor(userModel, connection) {
-        super(userModel, connection);
-        this.logger = new common_1.Logger(UsersRepository_1.name);
-    }
-};
-UsersRepository = UsersRepository_1 = __decorate([
-    (0, common_1.Injectable)(),
-    __param(0, (0, mongoose_1.InjectModel)(user_schema_1.User.name)),
-    __param(1, (0, mongoose_1.InjectConnection)()),
-    __metadata("design:paramtypes", [typeof (_a = typeof mongoose_2.Model !== "undefined" && mongoose_2.Model) === "function" ? _a : Object, typeof (_b = typeof mongoose_2.Connection !== "undefined" && mongoose_2.Connection) === "function" ? _b : Object])
-], UsersRepository);
-exports.UsersRepository = UsersRepository;
 
 
 /***/ }),
@@ -576,50 +540,115 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.UsersService = void 0;
 const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
 const bcrypt = __webpack_require__(/*! bcrypt */ "bcrypt");
-const users_repository_1 = __webpack_require__(/*! ./users.repository */ "./apps/auth/src/users/users.repository.ts");
+const typeorm_2 = __webpack_require__(/*! typeorm */ "typeorm");
+const user_entity_1 = __webpack_require__(/*! ./entities/user.entity */ "./apps/auth/src/users/entities/user.entity.ts");
 let UsersService = class UsersService {
     constructor(usersRepository) {
         this.usersRepository = usersRepository;
     }
     async createUser(request) {
         await this.validateCreateUserRequest(request);
-        const user = await this.usersRepository.create(Object.assign(Object.assign({}, request), { password: await bcrypt.hash(request.password, 10) }));
-        return user;
+        const user = this.usersRepository.create(Object.assign(Object.assign({}, request), { password: await bcrypt.hash(request.password, 10) }));
+        return await this.usersRepository.save(user);
     }
     async validateCreateUserRequest(request) {
         let user;
         try {
             user = await this.usersRepository.findOne({
-                email: request.email,
+                where: {
+                    email: request.email,
+                },
             });
         }
         catch (err) { }
         if (user) {
-            throw new common_1.UnprocessableEntityException('Email already exists.');
+            throw new common_1.UnprocessableEntityException("Email already exists.");
         }
     }
     async validateUser(email, password) {
-        const user = await this.usersRepository.findOne({ email });
-        const passwordIsValid = await bcrypt.compare(password, user.password);
-        if (!passwordIsValid) {
-            throw new common_1.UnauthorizedException('Credentials are not valid.');
+        const user = await this.usersRepository.findOne({
+            where: {
+                email: email,
+            },
+        });
+        if (user) {
+            const passwordIsValid = await bcrypt.compare(password, user.password);
+            if (!passwordIsValid) {
+                throw new common_1.UnauthorizedException("Credentials are not valid.");
+            }
+            return user;
         }
-        return user;
     }
     async getUser(getUserArgs) {
-        return this.usersRepository.findOne(getUserArgs);
+        return this.usersRepository.findOne({ where: Object.assign({}, getUserArgs) });
+    }
+    async findAll() {
+        return this.usersRepository.find({});
     }
 };
 UsersService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [typeof (_a = typeof users_repository_1.UsersRepository !== "undefined" && users_repository_1.UsersRepository) === "function" ? _a : Object])
+    __param(0, (0, typeorm_1.InjectRepository)(user_entity_1.default)),
+    __metadata("design:paramtypes", [typeof (_a = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _a : Object])
 ], UsersService);
 exports.UsersService = UsersService;
+
+
+/***/ }),
+
+/***/ "./apps/orders/src/entities/order.schema.ts":
+/*!**************************************************!*\
+  !*** ./apps/orders/src/entities/order.schema.ts ***!
+  \**************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
+let Order = class Order {
+};
+__decorate([
+    (0, typeorm_1.PrimaryGeneratedColumn)(),
+    __metadata("design:type", Number)
+], Order.prototype, "id", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", Number)
+], Order.prototype, "table", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: "simple-array",
+    }),
+    __metadata("design:type", Array)
+], Order.prototype, "orders", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: "float",
+    }),
+    __metadata("design:type", Number)
+], Order.prototype, "total", void 0);
+Order = __decorate([
+    (0, typeorm_1.Entity)({ name: "orders" })
+], Order);
+exports["default"] = Order;
 
 
 /***/ }),
@@ -749,105 +778,38 @@ exports.AUTH_SERVICE = 'AUTH';
 
 /***/ }),
 
-/***/ "./libs/common/src/database/abstract.repository.ts":
-/*!*********************************************************!*\
-  !*** ./libs/common/src/database/abstract.repository.ts ***!
-  \*********************************************************/
+/***/ "./libs/common/src/database/src/Database.validate.ts":
+/*!***********************************************************!*\
+  !*** ./libs/common/src/database/src/Database.validate.ts ***!
+  \***********************************************************/
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.AbstractRepository = void 0;
-const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-const mongoose_1 = __webpack_require__(/*! mongoose */ "mongoose");
-class AbstractRepository {
-    constructor(model, connection) {
-        this.model = model;
-        this.connection = connection;
-    }
-    async create(document, options) {
-        const createdDocument = new this.model(Object.assign(Object.assign({}, document), { _id: new mongoose_1.Types.ObjectId() }));
-        return (await createdDocument.save(options)).toJSON();
-    }
-    async findOne(filterQuery) {
-        const document = await this.model.findOne(filterQuery, {}, { lean: true });
-        if (!document) {
-            this.logger.warn('Document not found with filterQuery', filterQuery);
-            throw new common_1.NotFoundException('Document not found.');
-        }
-        return document;
-    }
-    async findOneAndUpdate(filterQuery, update) {
-        const document = await this.model.findOneAndUpdate(filterQuery, update, {
-            lean: true,
-            new: true,
-        });
-        if (!document) {
-            this.logger.warn(`Document not found with filterQuery:`, filterQuery);
-            throw new common_1.NotFoundException('Document not found.');
-        }
-        return document;
-    }
-    async upsert(filterQuery, document) {
-        return this.model.findOneAndUpdate(filterQuery, document, {
-            lean: true,
-            upsert: true,
-            new: true,
-        });
-    }
-    async find(filterQuery) {
-        return this.model.find(filterQuery, {}, { lean: true });
-    }
-    async startTransaction() {
-        const session = await this.connection.startSession();
-        session.startTransaction();
-        return session;
-    }
-}
-exports.AbstractRepository = AbstractRepository;
+exports.joiValidation = void 0;
+const Joi = __webpack_require__(/*! joi */ "joi");
+exports.joiValidation = {
+    validationSchema: Joi.object({
+        DB_URL: Joi.string().required(),
+        NODE_ENV: Joi.string()
+            .valid('development', 'production', 'test', 'provision')
+            .default('development'),
+        DB_TYPE: Joi.string().valid('mysql', 'postgresql').default('mysql'),
+        DB_SYNCHRONIZE: Joi.boolean(),
+        DB_MIGRATE: Joi.boolean(),
+        DB_TIMEOUT: Joi.number(),
+        DB_LOGGING: Joi.boolean(),
+        DB_SSL: Joi.boolean(),
+    }),
+};
 
 
 /***/ }),
 
-/***/ "./libs/common/src/database/abstract.schema.ts":
-/*!*****************************************************!*\
-  !*** ./libs/common/src/database/abstract.schema.ts ***!
-  \*****************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var _a;
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.AbstractDocument = void 0;
-const mongoose_1 = __webpack_require__(/*! @nestjs/mongoose */ "@nestjs/mongoose");
-const mongoose_2 = __webpack_require__(/*! mongoose */ "mongoose");
-let AbstractDocument = class AbstractDocument {
-};
-__decorate([
-    (0, mongoose_1.Prop)({ type: mongoose_2.SchemaTypes.ObjectId }),
-    __metadata("design:type", typeof (_a = typeof mongoose_2.Types !== "undefined" && mongoose_2.Types.ObjectId) === "function" ? _a : Object)
-], AbstractDocument.prototype, "_id", void 0);
-AbstractDocument = __decorate([
-    (0, mongoose_1.Schema)()
-], AbstractDocument);
-exports.AbstractDocument = AbstractDocument;
-
-
-/***/ }),
-
-/***/ "./libs/common/src/database/database.module.ts":
-/*!*****************************************************!*\
-  !*** ./libs/common/src/database/database.module.ts ***!
-  \*****************************************************/
+/***/ "./libs/common/src/database/src/database.module.ts":
+/*!*********************************************************!*\
+  !*** ./libs/common/src/database/src/database.module.ts ***!
+  \*********************************************************/
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -861,22 +823,60 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DatabaseModule = void 0;
 const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
-const mongoose_1 = __webpack_require__(/*! @nestjs/mongoose */ "@nestjs/mongoose");
+const typeorm_1 = __webpack_require__(/*! @nestjs/typeorm */ "@nestjs/typeorm");
+const user_entity_1 = __webpack_require__(/*! apps/auth/src/users/entities/user.entity */ "./apps/auth/src/users/entities/user.entity.ts");
+const order_schema_1 = __webpack_require__(/*! apps/orders/src/entities/order.schema */ "./apps/orders/src/entities/order.schema.ts");
 let DatabaseModule = class DatabaseModule {
 };
 DatabaseModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            mongoose_1.MongooseModule.forRootAsync({
-                useFactory: (configService) => ({
-                    uri: configService.get('MONGODB_URI'),
-                }),
+            typeorm_1.TypeOrmModule.forRootAsync({
+                imports: [config_1.ConfigModule],
                 inject: [config_1.ConfigService],
+                useFactory: (configService) => (Object.assign({ type: "postgres", url: configService.get("DB_URL"), entities: [order_schema_1.default, user_entity_1.default], synchronize: process.env.NODE_ENV === "development" ? true : false, migrationsRun: true, migrations: ["dist/database/migrations/*.js"] }, (configService.get("DB_SSL")
+                    ? {
+                        ssl: true,
+                        extra: {
+                            ssl: {
+                                rejectUnauthorized: false,
+                            },
+                        },
+                    }
+                    : {}))),
             }),
         ],
     })
 ], DatabaseModule);
 exports.DatabaseModule = DatabaseModule;
+
+
+/***/ }),
+
+/***/ "./libs/common/src/database/src/index.ts":
+/*!***********************************************!*\
+  !*** ./libs/common/src/database/src/index.ts ***!
+  \***********************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+__exportStar(__webpack_require__(/*! ./database.module */ "./libs/common/src/database/src/database.module.ts"), exports);
+__exportStar(__webpack_require__(/*! ./Database.validate */ "./libs/common/src/database/src/Database.validate.ts"), exports);
 
 
 /***/ }),
@@ -903,9 +903,6 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__webpack_require__(/*! ./database/database.module */ "./libs/common/src/database/database.module.ts"), exports);
-__exportStar(__webpack_require__(/*! ./database/abstract.repository */ "./libs/common/src/database/abstract.repository.ts"), exports);
-__exportStar(__webpack_require__(/*! ./database/abstract.schema */ "./libs/common/src/database/abstract.schema.ts"), exports);
 __exportStar(__webpack_require__(/*! ./rmq/rmq.service */ "./libs/common/src/rmq/rmq.service.ts"), exports);
 __exportStar(__webpack_require__(/*! ./rmq/rmq.module */ "./libs/common/src/rmq/rmq.module.ts"), exports);
 __exportStar(__webpack_require__(/*! ./auth/auth.module */ "./libs/common/src/auth/auth.module.ts"), exports);
@@ -1070,16 +1067,6 @@ module.exports = require("@nestjs/microservices");
 
 /***/ }),
 
-/***/ "@nestjs/mongoose":
-/*!***********************************!*\
-  !*** external "@nestjs/mongoose" ***!
-  \***********************************/
-/***/ ((module) => {
-
-module.exports = require("@nestjs/mongoose");
-
-/***/ }),
-
 /***/ "@nestjs/passport":
 /*!***********************************!*\
   !*** external "@nestjs/passport" ***!
@@ -1087,6 +1074,16 @@ module.exports = require("@nestjs/mongoose");
 /***/ ((module) => {
 
 module.exports = require("@nestjs/passport");
+
+/***/ }),
+
+/***/ "@nestjs/typeorm":
+/*!**********************************!*\
+  !*** external "@nestjs/typeorm" ***!
+  \**********************************/
+/***/ ((module) => {
+
+module.exports = require("@nestjs/typeorm");
 
 /***/ }),
 
@@ -1140,16 +1137,6 @@ module.exports = require("joi");
 
 /***/ }),
 
-/***/ "mongoose":
-/*!***************************!*\
-  !*** external "mongoose" ***!
-  \***************************/
-/***/ ((module) => {
-
-module.exports = require("mongoose");
-
-/***/ }),
-
 /***/ "passport-jwt":
 /*!*******************************!*\
   !*** external "passport-jwt" ***!
@@ -1177,6 +1164,16 @@ module.exports = require("passport-local");
 /***/ ((module) => {
 
 module.exports = require("rxjs");
+
+/***/ }),
+
+/***/ "typeorm":
+/*!**************************!*\
+  !*** external "typeorm" ***!
+  \**************************/
+/***/ ((module) => {
+
+module.exports = require("typeorm");
 
 /***/ })
 
@@ -1224,15 +1221,15 @@ const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(auth_module_1.AuthModule);
     const rmqService = app.get(common_1.RmqService);
-    app.connectMicroservice(rmqService.getOptions('AUTH', true));
+    app.connectMicroservice(rmqService.getOptions("AUTH", true));
     app.useGlobalPipes(new common_2.ValidationPipe());
     const configService = app.get(config_1.ConfigService);
     await app.startAllMicroservices();
     app.enableCors({
-        origin: ["http://localhost:3002"],
-        credentials: true
+        origin: ["http://localhost:3002", "http://localhost:3005"],
+        credentials: true,
     });
-    await app.listen(configService.get('PORT'));
+    await app.listen(configService.get("PORT"));
 }
 bootstrap();
 

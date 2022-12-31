@@ -5,7 +5,10 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm install 
+RUN npm config set registry="http://registry.npmjs.org/"
+RUN npm i -g @nestjs/cli
+RUN npm cache clear --force
+RUN npm install  
 
 
 COPY . .

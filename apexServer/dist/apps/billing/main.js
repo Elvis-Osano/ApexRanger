@@ -147,7 +147,7 @@ let BillingService = BillingService_1 = class BillingService {
         const invoiceDetail = {
             service: {
                 server: user.name.toUpperCase(),
-                table: "56",
+                table: request.table,
             },
             items: request.orders,
             subtotal: request.total,
@@ -450,138 +450,6 @@ exports.AUTH_SERVICE = 'AUTH';
 
 /***/ }),
 
-/***/ "./libs/common/src/database/abstract.repository.ts":
-/*!*********************************************************!*\
-  !*** ./libs/common/src/database/abstract.repository.ts ***!
-  \*********************************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.AbstractRepository = void 0;
-const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-const mongoose_1 = __webpack_require__(/*! mongoose */ "mongoose");
-class AbstractRepository {
-    constructor(model, connection) {
-        this.model = model;
-        this.connection = connection;
-    }
-    async create(document, options) {
-        const createdDocument = new this.model(Object.assign(Object.assign({}, document), { _id: new mongoose_1.Types.ObjectId() }));
-        return (await createdDocument.save(options)).toJSON();
-    }
-    async findOne(filterQuery) {
-        const document = await this.model.findOne(filterQuery, {}, { lean: true });
-        if (!document) {
-            this.logger.warn('Document not found with filterQuery', filterQuery);
-            throw new common_1.NotFoundException('Document not found.');
-        }
-        return document;
-    }
-    async findOneAndUpdate(filterQuery, update) {
-        const document = await this.model.findOneAndUpdate(filterQuery, update, {
-            lean: true,
-            new: true,
-        });
-        if (!document) {
-            this.logger.warn(`Document not found with filterQuery:`, filterQuery);
-            throw new common_1.NotFoundException('Document not found.');
-        }
-        return document;
-    }
-    async upsert(filterQuery, document) {
-        return this.model.findOneAndUpdate(filterQuery, document, {
-            lean: true,
-            upsert: true,
-            new: true,
-        });
-    }
-    async find(filterQuery) {
-        return this.model.find(filterQuery, {}, { lean: true });
-    }
-    async startTransaction() {
-        const session = await this.connection.startSession();
-        session.startTransaction();
-        return session;
-    }
-}
-exports.AbstractRepository = AbstractRepository;
-
-
-/***/ }),
-
-/***/ "./libs/common/src/database/abstract.schema.ts":
-/*!*****************************************************!*\
-  !*** ./libs/common/src/database/abstract.schema.ts ***!
-  \*****************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var _a;
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.AbstractDocument = void 0;
-const mongoose_1 = __webpack_require__(/*! @nestjs/mongoose */ "@nestjs/mongoose");
-const mongoose_2 = __webpack_require__(/*! mongoose */ "mongoose");
-let AbstractDocument = class AbstractDocument {
-};
-__decorate([
-    (0, mongoose_1.Prop)({ type: mongoose_2.SchemaTypes.ObjectId }),
-    __metadata("design:type", typeof (_a = typeof mongoose_2.Types !== "undefined" && mongoose_2.Types.ObjectId) === "function" ? _a : Object)
-], AbstractDocument.prototype, "_id", void 0);
-AbstractDocument = __decorate([
-    (0, mongoose_1.Schema)()
-], AbstractDocument);
-exports.AbstractDocument = AbstractDocument;
-
-
-/***/ }),
-
-/***/ "./libs/common/src/database/database.module.ts":
-/*!*****************************************************!*\
-  !*** ./libs/common/src/database/database.module.ts ***!
-  \*****************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.DatabaseModule = void 0;
-const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
-const mongoose_1 = __webpack_require__(/*! @nestjs/mongoose */ "@nestjs/mongoose");
-let DatabaseModule = class DatabaseModule {
-};
-DatabaseModule = __decorate([
-    (0, common_1.Module)({
-        imports: [
-            mongoose_1.MongooseModule.forRootAsync({
-                useFactory: (configService) => ({
-                    uri: configService.get('MONGODB_URI'),
-                }),
-                inject: [config_1.ConfigService],
-            }),
-        ],
-    })
-], DatabaseModule);
-exports.DatabaseModule = DatabaseModule;
-
-
-/***/ }),
-
 /***/ "./libs/common/src/index.ts":
 /*!**********************************!*\
   !*** ./libs/common/src/index.ts ***!
@@ -604,9 +472,6 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__webpack_require__(/*! ./database/database.module */ "./libs/common/src/database/database.module.ts"), exports);
-__exportStar(__webpack_require__(/*! ./database/abstract.repository */ "./libs/common/src/database/abstract.repository.ts"), exports);
-__exportStar(__webpack_require__(/*! ./database/abstract.schema */ "./libs/common/src/database/abstract.schema.ts"), exports);
 __exportStar(__webpack_require__(/*! ./rmq/rmq.service */ "./libs/common/src/rmq/rmq.service.ts"), exports);
 __exportStar(__webpack_require__(/*! ./rmq/rmq.module */ "./libs/common/src/rmq/rmq.module.ts"), exports);
 __exportStar(__webpack_require__(/*! ./auth/auth.module */ "./libs/common/src/auth/auth.module.ts"), exports);
@@ -761,16 +626,6 @@ module.exports = require("@nestjs/microservices");
 
 /***/ }),
 
-/***/ "@nestjs/mongoose":
-/*!***********************************!*\
-  !*** external "@nestjs/mongoose" ***!
-  \***********************************/
-/***/ ((module) => {
-
-module.exports = require("@nestjs/mongoose");
-
-/***/ }),
-
 /***/ "cookie-parser":
 /*!********************************!*\
   !*** external "cookie-parser" ***!
@@ -788,16 +643,6 @@ module.exports = require("cookie-parser");
 /***/ ((module) => {
 
 module.exports = require("joi");
-
-/***/ }),
-
-/***/ "mongoose":
-/*!***************************!*\
-  !*** external "mongoose" ***!
-  \***************************/
-/***/ ((module) => {
-
-module.exports = require("mongoose");
 
 /***/ }),
 

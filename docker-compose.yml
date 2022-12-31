@@ -1,22 +1,21 @@
 version: '3.1'
 services:
   apex:
+    container_name: apexFrontend
     build:
       context: ./apex
       dockerfile: ./Dockerfile
     depends_on:
       - orders
-     
+       
     ports:
       - '3002:3002'  
   orders:
+    container_name: apexOrders
     build:
       context: ./apexServer
       dockerfile: ./apps/orders/Dockerfile    
-    depends_on:
-      - mongodb-primary
-      - mongodb-secondary
-      - mongodb-arbiter
+    depends_on:     
       - billing
       - auth
       - rabbitmq
@@ -26,14 +25,12 @@ services:
     ports:
       - '3000:3000'
   billing:
+    container_name: apexBilling
     build:
       context: ./apexServer
       dockerfile: ./apps/billing/Dockerfile
       
-    depends_on:
-      - mongodb-primary
-      - mongodb-secondary
-      - mongodb-arbiter
+    depends_on:      
       - rabbitmq
       - auth
     ports:
@@ -42,6 +39,7 @@ services:
     #   - .:/app
     #   - /app/node_modules
   auth:
+    container_name: apexAuth
     build:
       context: ./apexServer
       dockerfile: ./apps/auth/Dockerfile     
@@ -49,51 +47,41 @@ services:
       - '3001:3001'
     
     depends_on:
-      - mongodb-primary
-      - mongodb-secondary
-      - mongodb-arbiter
+      - db
       - rabbitmq
     # volumes:
     #   - .:/app
     #   - /app/node_modules
   rabbitmq:
+    container_name: RabbitMQ
     image: rabbitmq
-    # ports:
-    #   - '5672:5672'
-  mongodb-primary:
-    image: docker.io/bitnami/mongodb:5.0
+    ports:
+      - '5672:5672'
+      
+  db:
+    container_name: apexDatabase
+    image: postgres
     environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongodb-primary
-      - MONGODB_REPLICA_SET_MODE=primary
-      - MONGODB_ROOT_PASSWORD=password123
-      - MONGODB_REPLICA_SET_KEY=replicasetkey123
+      - POSTGRES_HOST_AUTH_METHOD=trust 
+      - POSTGRES_PASSWORD=password 
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=apex 
     volumes:
-      - 'mongodb_master_data:/bitnami/mongodb'
-    # ports:
-    #   - '27017:27017'
+      - local_pgdata:/var/lib/postgresql/data 
+    ports:
+      - 3306:3306
 
-  mongodb-secondary:
-    image: docker.io/bitnami/mongodb:5.0
-    depends_on:
-      - mongodb-primary
+  dbadmin:
+    container_name: ApexDBadmin
+    image: dpage/pgadmin4    
+    ports:
+      - 5050:80
     environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongodb-secondary
-      - MONGODB_REPLICA_SET_MODE=secondary
-      - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
-      - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=password123
-      - MONGODB_REPLICA_SET_KEY=replicasetkey123
-
-  mongodb-arbiter:
-    image: docker.io/bitnami/mongodb:5.0
-    depends_on:
-      - mongodb-primary
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongodb-arbiter
-      - MONGODB_REPLICA_SET_MODE=arbiter
-      - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
-      - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=password123
-      - MONGODB_REPLICA_SET_KEY=replicasetkey123
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: pgadmin4
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin 
 
 volumes:
-  mongodb_master_data:
-    driver: local
+  local_pgdata:
+  pgadmin-data:

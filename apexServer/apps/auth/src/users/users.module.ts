@@ -1,16 +1,16 @@
-import { Module } from '@nestjs/common';
-import { UsersRepository } from './users.repository';
-import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './schemas/user.schema';
+import { Module } from "@nestjs/common";
+
+import { UsersController } from "./users.controller";
+import { UsersService } from "./users.service";
+import { MongooseModule } from "@nestjs/mongoose";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import User from "./entities/user.entity";
+import { DatabaseModule } from "@app/common/database/src";
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-  ],
+  imports: [DatabaseModule, TypeOrmModule.forFeature([User])],
   controllers: [UsersController],
-  providers: [UsersService, UsersRepository],
+  providers: [UsersService],
   exports: [UsersService],
 })
 export class UsersModule {}

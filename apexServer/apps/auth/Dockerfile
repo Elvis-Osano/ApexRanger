@@ -4,8 +4,11 @@ FROM node:alpine
 WORKDIR /usr/src/app
 
 COPY package*.json ./
+RUN npm config set registry="http://registry.npmjs.org/"
 
-RUN npm install 
+RUN npm i -g @nestjs/cli
+RUN npm cache clear --force
+RUN npm install  
 
 COPY . .
 
