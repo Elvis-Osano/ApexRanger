@@ -13,7 +13,13 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   await app.startAllMicroservices();
   app.enableCors({
-    origin: ["http://localhost:3002", "http://localhost:3005"],
+    origin: [
+      "http://localhost:3002",
+      "http://localhost:3005",
+      "http://localhost",
+      "http://ec2-100-27-28-26.compute-1.amazonaws.com",
+      "http://100.27.28.26",
+    ],
     credentials: true,
   });
   await app.listen(configService.get("PORT"));

@@ -20,7 +20,7 @@ export class BillingController {
     private readonly rmqService: RmqService
   ) {}
 
-  @Get()
+  @Get("bill")
   async getBill(@Response({ passthrough: true }) res, @Body() data) {
     const file = createReadStream(
       join(process.cwd(), "./invoices/your-invoice-name.pdf")

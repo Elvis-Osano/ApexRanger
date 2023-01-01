@@ -8,8 +8,7 @@ services:
     depends_on:
       - orders
        
-    ports:
-      - '3002:3002'  
+     
   orders:
     container_name: apexOrders
     build:
@@ -19,11 +18,7 @@ services:
       - billing
       - auth
       - rabbitmq
-    # volumes:
-    #   - .:/app
-    #   - /app/node_modules
-    ports:
-      - '3000:3000'
+   
   billing:
     container_name: apexBilling
     build:
@@ -33,30 +28,23 @@ services:
     depends_on:      
       - rabbitmq
       - auth
-    ports:
-      - '5000:5000'  
-    # volumes:
-    #   - .:/app
-    #   - /app/node_modules
+      
+    
   auth:
     container_name: apexAuth
     build:
       context: ./apexServer
-      dockerfile: ./apps/auth/Dockerfile     
-    ports:
-      - '3001:3001'
+      dockerfile: ./apps/auth/Dockerfile    
+    
     
     depends_on:
       - db
       - rabbitmq
-    # volumes:
-    #   - .:/app
-    #   - /app/node_modules
+    
   rabbitmq:
     container_name: RabbitMQ
     image: rabbitmq
-    ports:
-      - '5672:5672'
+    
       
   db:
     container_name: apexDatabase
@@ -68,20 +56,30 @@ services:
       - POSTGRES_DB=apex 
     volumes:
       - local_pgdata:/var/lib/postgresql/data 
-    ports:
-      - 3306:3306
-
-  dbadmin:
-    container_name: ApexDBadmin
-    image: dpage/pgadmin4    
-    ports:
-      - 5050:80
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: pgadmin4
-    volumes:
-      - pgadmin-data:/var/lib/pgadmin 
-
+    
+  proxy:    
+      container_name: apex_proxy
+      
+      depends_on:
+        - orders
+        
+      build:
+        dockerfile: ./Dockerfile
+        context: ./nginx
+      ports:
+        - '80:80'
 volumes:
   local_pgdata:
-  pgadmin-data:
+  # pgadmin-data:
+
+  # dbadmin:
+  #   container_name: ApexDBadmin
+  #   image: dpage/pgadmin4    
+  #   ports:
+  #     - 5050:80
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@admin.com
+  #     PGADMIN_DEFAULT_PASSWORD: pgadmin4
+  #   volumes:
+  #     - pgadmin-data:/var/lib/pgadmin 
+  

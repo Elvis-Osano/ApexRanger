@@ -13,7 +13,7 @@ const Auth = {
   ) => {
     axios
       .post(
-        "http://localhost:3001/auth/logout",
+        `${process.env.NEXT_PUBLIC_URL}/auth/logout`,
         {},
         {
           withCredentials: true,
@@ -48,7 +48,7 @@ const Auth = {
     };
 
     axios
-      .post("http://localhost:3001/auth/login", payload, {
+      .post(`${process.env.NEXT_PUBLIC_URL}/auth/login`, payload, {
         withCredentials: true,
         headers: {
           "Access-Control-Allow-Origin": "*",

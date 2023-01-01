@@ -8,7 +8,7 @@ export class CheckOut {
     let payload = { table: 54, orders: items, total: total };
 
     await axios
-      .post("http://localhost:3000/orders", payload, {
+      .post(`${process.env.NEXT_PUBLIC_URL}/orders`, payload, {
         withCredentials: true,
         headers: {
           "Access-Control-Allow-Origin": "*",
@@ -16,11 +16,8 @@ export class CheckOut {
         },
       })
       .then((res) => {
-        // toast.success("Success", {
-        //   autoClose: 500
-        // })
         let a = document.createElement("a");
-        a.href = `http://localhost:5000/`;
+        a.href = `${process.env.NEXT_PUBLIC_URL}/bill`;
         a.download = "invoice.json";
         a.target = "_blank";
         a.click();
